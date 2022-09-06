@@ -318,7 +318,7 @@ def select_level(exit_func, field: tk.Canvas, tile_size: int, height: int, width
     loaded_levels.resizable(False, False)
     loaded_levels.grab_set()
     scroll_y = tk.Scrollbar(loaded_levels)
-    scroll_x = tk.Scrollbar(loaded_levels)
+    scroll_x = tk.Scrollbar(loaded_levels, orient='horizontal')
     levels_listbox = tk.Listbox(loaded_levels, width=40, font='courier 12', height=20, yscrollcommand=scroll_y.set,
                                 xscrollcommand=scroll_x.set)
     levels_listbox.grid(row=1)
