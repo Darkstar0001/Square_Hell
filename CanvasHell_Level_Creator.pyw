@@ -31,7 +31,7 @@ class Setup(tk.Frame):
 
 class LevelCreator(tk.Frame):
     def __init__(self, height: int, width: int, preload=()):
-        self.VERSION = 0.1
+        self.VERSION = 1
         tk.Tk()
         tk.Frame.__init__(self)
         self.master.title("Level Creator")
@@ -113,7 +113,9 @@ class LevelCreator(tk.Frame):
                                                                             'blocked, rendering the level unwinnable.')
         return True
 
-    def plot_path_to_goal(self, x1: int, y1: int, x2: int, y2: int, walked: dict) -> bool | None: # Pathing dict still breaks sometimes
+    def plot_path_to_goal(self, x1: int, y1: int, x2: int, y2: int, walked: dict) -> bool | None:
+        """Attempts to automatically detect and reject levels in which all goal tiles or some coins are completely
+        inaccessible due to walls or stationary traps. Does not track mobile traps, and treats them permissively."""
         if walked['Goal'] and walked['Coin'] == len(self.field.find_withtag('Coin')):
             return True
         if (x1, y1) in walked['Tiles'] or x1 < 0 or x1 > self.WIDTH or y1 < 0 or y2 > self.HEIGHT:
@@ -127,7 +129,6 @@ class LevelCreator(tk.Frame):
                 walked['Goal'] = 1
             elif current in 'Wall, Trap':
                 return
-        #self.field.create_rectangle(x1, y1, x2, y2, fill='blue', tags='Test')  # for testing purposes only
         if any((self.plot_path_to_goal(x1 + self.TILE_SIZE, y1, x2 + self.TILE_SIZE, y2, walked),
                self.plot_path_to_goal(x1 - self.TILE_SIZE, y1, x2 - self.TILE_SIZE, y2, walked),
                self.plot_path_to_goal(x1, y1 + self.TILE_SIZE, x2, y2 + self.TILE_SIZE, walked),
