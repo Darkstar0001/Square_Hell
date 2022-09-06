@@ -12,8 +12,8 @@ class Setup(tk.Frame):
         tk.Tk()
         tk.Frame.__init__(self)
         self.master.resizable(False, False)
+        self.master.title('Level Creator Setup')
         self.grid()
-        ttk.Style(self).configure('TLabel', font='arial 25')
         ttk.Style(self).configure('TButton', font='arial 25')
        
         ttk.Button(self, text='Create New', command= self.finish).grid(columnspan=3)
