@@ -263,13 +263,7 @@ class Levels(tk.Frame):
         for control in tuple(self.key_binds.values()):
             self.root.unbind(control)
             self.root.unbind(f"KeyRelease-{control}")
-
-
-    # def create_interface(self):
-    #     interface = tk.Toplevel()
-    #     ttk.Button()
-    #     return interface
-
+            
 
 def place_object(event, field: tk.Canvas, active_object: str, tile_size: int, height: int, width: int, properties: str,
                  draw_commands=(
