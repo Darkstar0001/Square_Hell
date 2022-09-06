@@ -11,21 +11,12 @@ class Setup(tk.Frame):
     def __init__(self):
         tk.Tk()
         tk.Frame.__init__(self)
-        self.master.title('Level Size')
         self.master.resizable(False, False)
-        self.height = tk.IntVar(value=35)
-        self.width = tk.IntVar(value=50)
         self.grid()
         ttk.Style(self).configure('TLabel', font='arial 25')
         ttk.Style(self).configure('TButton', font='arial 25')
-        ttk.Label(self, text='Height: ').grid()
-        height_box = tk.Spinbox(self, font='arial 25', from_=1, to=100, width=5, textvariable=self.height, state='readonly')
-        height_box.grid(row=0, column=1)
-        ttk.Label(self, text='Width: ').grid()
-        width_box = tk.Spinbox(self, font='arial 25', from_=1, to=100, width=5, textvariable=self.width, state='readonly')
-        width_box.grid(row=1, column=1)
-
-        ttk.Button(self, text='Start', command=lambda: self.finish()).grid(columnspan=3)
+       
+        ttk.Button(self, text='Create New', command= self.finish).grid(columnspan=3)
         ttk.Button(self, text='Preload level from file', command=lambda: select_level(self.load_level, None, None, None, None)).grid(columnspan=2)
 
     def load_level(self, **kwargs):
@@ -34,7 +25,7 @@ class Setup(tk.Frame):
             self.finish(kwargs)
 
     def finish(self, level=None):
-        self.settings_list = (self.height.get(), self.width.get(), level)
+        self.settings_list = (35, 50, level)
         self.master.destroy()
 
 
