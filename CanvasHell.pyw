@@ -45,7 +45,6 @@ class Levels(tk.Frame):
         self.key_binds = {'UP': 'w', 'DOWN': 's', 'LEFT': 'a', 'RIGHT': 'd', 'START/PAUSE': 'Return'}
         self.loaded_level = False
         start_new_thread(self.game_loop, ())
-        print(self.__dict__)
 
     def load_level(self, filename: str, index: int, field: tk.Canvas, tile_size: int, height: int, width: int, window=None):
         if (name := load_level(filename=filename, index=index, field=field, tile_size=tile_size,
