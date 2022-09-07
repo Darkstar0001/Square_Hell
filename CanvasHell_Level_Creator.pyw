@@ -4,7 +4,7 @@ from time import sleep
 from sys import setrecursionlimit
 import csv
 from os.path import exists
-from CanvasHell import place_object, get_grid_location, select_level, load_level
+from canvashellsharedfunctions import place_object, get_grid_location, select_level, load_level
 
 
 class Setup(tk.Frame):
@@ -75,7 +75,7 @@ class LevelCreator(tk.Frame):
         if preload:
             self.level_name, self.level_desc = load_level(
                 filename=preload['filename'], index=preload['index'], field=self.field,
-                tile_size=self.TILE_SIZE, height=self.HEIGHT, width=self.WIDTH)
+                tile_size=self.TILE_SIZE, height=self.HEIGHT, width=self.WIDTH, editor_preload=True)
             self.master.title("Level Creator - " + self.level_name)
 
     def remove_object(self, event):
