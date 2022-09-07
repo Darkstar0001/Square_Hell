@@ -51,7 +51,8 @@ def select_level(exit_func, field: tk.Canvas, tile_size: int, height: int, width
         return
     try:
         with open(filename, newline='') as csvfile:
-            level_list = [level['Name'] + ' - ' + level['Description'].replace('\n', ' ') for level in csv.DictReader(csvfile)]
+            level_list = [level['Name'] + ' - ' + level['Description'].replace('\n', ' ') if level['Description'] else
+                          level['Name'] for level in csv.DictReader(csvfile)]
     except KeyError:
         return tk.messagebox.showerror('Invalid file', 'Level data could not be found')
     loaded_levels = tk.Toplevel()
@@ -60,7 +61,7 @@ def select_level(exit_func, field: tk.Canvas, tile_size: int, height: int, width
     loaded_levels.grab_set()
     scroll_y = tk.Scrollbar(loaded_levels)
     scroll_x = tk.Scrollbar(loaded_levels, orient='horizontal')
-    levels_listbox = tk.Listbox(loaded_levels, width=40, font='courier 12', height=20, yscrollcommand=scroll_y.set,
+    levels_listbox = tk.Listbox(loaded_levels, width=60, font='courier 12', height=20, yscrollcommand=scroll_y.set,
                                 xscrollcommand=scroll_x.set)
     levels_listbox.grid(row=1)
     tk.Button(loaded_levels, text='Load Level', command=lambda: exit_func(filename=filename,
