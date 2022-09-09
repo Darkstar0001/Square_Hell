@@ -3,7 +3,7 @@ A simple 2D game run in the tkinter Canvas, in the vein of the "World's Hardest 
 
 **Level Player:**  
 Controls can be bound to different keys with "Customize controls"  
-Default controls: WASD - move , Enter - start/pause  
+Default controls: WASD - move , space - start/pause , Left CTRL - Slow mode (for precise movement) 
 Light green tiles are checkpoints, dark green are goal tiles, smooth yellow circles are coins. Collect all coins and reach the goal to win.  
 Circles with uneven outlines are traps.  
 Manually load a level to play using "Load Level"  
