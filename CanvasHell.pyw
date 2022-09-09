@@ -15,7 +15,6 @@ class Levels(tk.Frame):
     def __init__(self):
         self.root = tk.Tk()
         tk.Frame.__init__(self)
-        self.grid()
         self.master.resizable(False, False)
         self.TILE_SIZE = 20
         self.WIDTH = 50 * self.TILE_SIZE  # default 1000
@@ -28,21 +27,22 @@ class Levels(tk.Frame):
 
         ttk.Style().configure("TButton", font='arial 30')
 
-        self.load_level_button = ttk.Button(self, text='Load Level', command=lambda: select_level(
+        self.load_level_button = ttk.Button(self, text='Load Level', takefocus=False, command=lambda: select_level(
             exit_func=self.load_level, field=self.field, tile_size=self.TILE_SIZE, height=self.HEIGHT, width=self.WIDTH))
         self.load_level_button.grid(row=0, sticky='w')
-        self.start_button = ttk.Button(self, text='Start', state='disabled', command=self.start)
+        self.start_button = ttk.Button(self, text='Start', state='disabled', command=self.start, takefocus=False)
         self.start_button.grid(row=0)
 
         self.customize_controls_button = ttk.Button(self, text='Customize controls', command=lambda:
-                                                    self.customize_controls_dialogue(tuple(self.key_binds.values())))
+                                                    self.customize_controls_dialogue(self.key_binds), takefocus=False)
         self.customize_controls_button.grid(row=0, sticky='e')
 
         self.field = tk.Canvas(self, bg='azure', height=self.HEIGHT)
         self.field.grid(sticky='ews', row=1)
 
         self.x_velocity = self.y_velocity = 0
-        self.key_binds = {'UP': 'w', 'DOWN': 's', 'LEFT': 'a', 'RIGHT': 'd', 'START/PAUSE': 'Return'}
+        self.speed_modifier = 1
+        self.key_binds = {'UP': 'w', 'DOWN': 's', 'LEFT': 'a', 'RIGHT': 'd', 'START/PAUSE': 'space', 'SLOWMODE': 'Control_L'}
         self.loaded_level = False
         start_new_thread(self.game_loop, ())
 
@@ -57,10 +57,30 @@ class Levels(tk.Frame):
             self.coins_remaining = len(self.field.find_withtag('Coin'))
             self.master.title('Level - '+name)
             self.start_button.config(state='normal')
-            self.root.bind(f"<{self.key_binds['START/PAUSE']}>", lambda _: self.start() if not self.running else self.stop())
+            self.root.bind(f"<{self.key_binds['START/PAUSE']}>", self.start)
             self.cycle = 0
             self.deaths = 0
             self.loaded_level = True
+
+    def start(self, _=None):
+        self.root.unbind(f"<{self.key_binds['START/PAUSE']}>")
+        self.customize_controls_button.config(state='disabled')
+        self.load_level_button.config(state='disabled')
+        self.running = True
+        self.run.set()
+        self.bind_controls()
+        self.start_button.config(text='Pause', command=self.stop)
+        self.root.bind(f"<KeyRelease-{self.key_binds['START/PAUSE']}>",
+                       lambda: self.root.bind(f"<{self.key_binds['START/PAUSE']}>", self.stop))
+
+    def stop(self, _=None):
+        self.unbind_controls()
+        self.running = False
+        self.customize_controls_button.config(state='normal')
+        self.load_level_button.config(state='normal')
+        self.start_button.config(text='Start', command=self.start)
+        self.root.bind(f"<KeyRelease-{self.key_binds['START/PAUSE']}>",
+                       lambda: self.root.bind(f"<{self.key_binds['START/PAUSE']}>", self.start))
 
     def game_loop(self):
         while True:
@@ -69,16 +89,18 @@ class Levels(tk.Frame):
             while self.running:
                 frame_start_time = perf_counter()
                 left, top, right, bottom = self.field.coords(self.player)
-                x_offset, y_offset = self.wall_collision_check(left+self.x_velocity, top+self.y_velocity,
-                                                               right+self.x_velocity, bottom+self.y_velocity)
-                self.field.move(self.player, self.x_velocity+x_offset, self.y_velocity+y_offset)
+                x_velocity = self.x_velocity*self.speed_modifier
+                y_velocity = self.y_velocity*self.speed_modifier
+                x_offset, y_offset = self.wall_collision_check(left+x_velocity, top+y_velocity,
+                                                               right+x_velocity, bottom+y_velocity)
+                self.field.move(self.player, x_velocity+x_offset, y_velocity+y_offset)
                 self.move_traps(self.cycle)
                 left, top, right, bottom = self.field.coords(self.player)
                 if collision := [self.field.gettags(item)[0] for item in self.field.find_overlapping(
                         left+1, top+1, right-1, bottom-1) if item != self.player]:
                     if 'Trap' in collision or 'V Trap' in collision or 'H Trap' in collision:
                         self.die()
-                    elif (self.x_velocity or self.y_velocity) and (deep_collision := [
+                    elif (x_velocity or y_velocity) and (deep_collision := [
                         item for item in self.field.find_overlapping(
                             left+self.TILE_SIZE/3, top+self.TILE_SIZE/3, right-self.TILE_SIZE/3, bottom-self.TILE_SIZE/3)
                             if item != self.player]):
@@ -164,24 +186,8 @@ class Levels(tk.Frame):
 
     def set_checkpoint(self, left: int, top: int, right: int, bottom: int):
         self.checkpoint = (left+3, top+3, right-3, bottom-3)
-        for coin in self.field.find_withtag('Coin'):
-            if self.field.gettags(coin)[1] == 'Collected':
-                self.field.delete(coin)
-
-    def start(self):
-        self.customize_controls_button.config(state='disabled')
-        self.load_level_button.config(state='disabled')
-        self.running = True
-        self.run.set()
-        self.bind_controls()
-        self.start_button.config(text='Pause', command=self.stop)
-
-    def stop(self):
-        self.unbind_controls()
-        self.running = False
-        self.customize_controls_button.config(state='normal')
-        self.load_level_button.config(state='normal')
-        self.start_button.config(text='Start', command=self.start)
+        for coin in self.field.find_withtag('Collected'):
+            self.field.delete(coin)
 
     def queue_move(self, x_move=0, y_move=0):
         if x_move:
@@ -195,11 +201,19 @@ class Levels(tk.Frame):
         elif y_stop == self.y_velocity:
             self.y_velocity = 0
 
+    def slow_mode_toggle(self, _=None):
+        self.root.unbind(f"<{self.key_binds['SLOWMODE']}>")
+        self.speed_modifier = 0.5 if self.speed_modifier == 1 else 1
+        self.root.bind(f"<KeyRelease-{self.key_binds['SLOWMODE']}>", self.slow_mode_rebind)
+
+    def slow_mode_rebind(self, _=None):
+        self.root.unbind(f"<KeyRelease-{self.key_binds['SLOWMODE']}>")
+        self.root.bind(f"<{self.key_binds['SLOWMODE']}>", self.slow_mode_toggle)
+
     def die(self):
-        for coin in self.field.find_withtag('Coin'):
-            if self.field.gettags(coin)[1] == 'Collected':
-                self.field.itemconfig(coin, tags=['Coin', ' '], state='normal')
-                self.coins_remaining += 1
+        for coin in self.field.find_withtag('Collected'):
+            self.field.itemconfig(coin, tags=['Coin', ' '], state='normal')
+            self.coins_remaining += 1
         self.deaths += 1
         self.field.coords(self.player, *self.checkpoint)
 
@@ -208,7 +222,7 @@ class Levels(tk.Frame):
         self.start_button.config(state='disabled')
         self.field.create_text(self.WIDTH/2, self.HEIGHT/2, text=f'Victory!\n{self.deaths} deaths', font='arial 40')
 
-    def customize_controls_dialogue(self, bound_keys):
+    def customize_controls_dialogue(self, key_binds):
         key_bind_window = tk.Toplevel()
         key_bind_window.title('Customize Key Bindings')
         key_bind_window.resizable(False, False)
@@ -219,27 +233,26 @@ class Levels(tk.Frame):
         instructions = ttk.Label(key_bind_window, text='Click a button to bind\nthe key for that action')
         instructions.grid(row=0, columnspan=2, pady=(0, 10))
 
-        button_list = [ttk.Button(key_bind_window, text=dir, command=lambda dir=dir: self.prepare_key_bind(
-            dir, button_list, label_dict, instructions, key_bind_window)) for dir in ('UP', 'DOWN', 'LEFT', 'RIGHT', 'START/PAUSE')]
-        for row in range(5):
-            button_list[row].grid(row=row+1)
+        button_list = [ttk.Button(key_bind_window, text=control, command=lambda control=control: self.prepare_key_bind(
+            control, button_list, label_dict, instructions, key_bind_window)) for control in key_binds.keys()]
 
-        label_dict = {dir: ttk.Label(key_bind_window, text=key)
-                      for dir, key in zip(('UP', 'DOWN', 'LEFT', 'RIGHT', 'START/PAUSE'), bound_keys)}
+        label_dict = {control: ttk.Label(key_bind_window, text=bound_key)
+                      for control, bound_key in key_binds.items()}
         for row, label in enumerate(tuple(label_dict.values())):
+            button_list[row].grid(row=row+1)
             label.grid(row=row+1, column=1)
 
-    def prepare_key_bind(self, direction: str, buttons: list, labels: dict, instructions: tk.Label, window: tk.Toplevel):
+    def prepare_key_bind(self, control: str, buttons: list, labels: dict, instructions: tk.Label, window: tk.Toplevel):
         for button in buttons:
             button.config(state='disabled')
-        instructions.config(text=f'Press a key to use\nfor moving {direction}')
-        window.bind('<Key>', lambda key: self.bind_custom_key(key.keysym, direction, buttons, labels, instructions, window))
+        instructions.config(text=f'Press a key to use\nfor {control}', justify='center')
+        window.bind('<Key>', lambda key: self.bind_custom_key(key.keysym, control, buttons, labels, instructions, window))
 
-    def bind_custom_key(self, key: str, direction: str, buttons: list, labels: dict, instructions: tk.Label, window: tk.Toplevel):
+    def bind_custom_key(self, key: str, control: str, buttons: list, labels: dict, instructions: tk.Label, window: tk.Toplevel):
         window.unbind('<Key>')
         if key not in tuple(self.key_binds.values()):
-            self.key_binds[direction] = key
-            labels[direction].config(text=key)
+            self.key_binds[control] = key
+            labels[control].config(text=key)
         else:
             tk.messagebox.showwarning('Duplicate binding', 'A control is already bound to that key.')
         for button in buttons:
@@ -257,7 +270,7 @@ class Levels(tk.Frame):
         self.root.bind(f"<KeyRelease-{self.key_binds['LEFT']}>", lambda _: self.queue_stop(x_stop=-4))
         self.root.bind(f"<KeyRelease-{self.key_binds['RIGHT']}>", lambda _: self.queue_stop(x_stop=4))
 
-        self.root.bind(f"<{self.key_binds['START/PAUSE']}>", lambda _: self.start() if not self.running else self.stop())
+        self.root.bind(f"<{self.key_binds['SLOWMODE']}>", self.slow_mode_toggle)
 
     def unbind_controls(self):
         for control in tuple(self.key_binds.values()):
