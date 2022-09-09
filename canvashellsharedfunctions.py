@@ -34,7 +34,7 @@ def place_object(event, field: tk.Canvas, active_object: str, tile_size: int, he
             return field.coords(old_spawn[0], left, top, right, bottom)
     if tag not in ('V Trap', 'H Trap'):
         properties = ' '
-    elif properties == 6 and direction:
+    elif properties == '3' and direction:
         direction = -1
     eval(f"field.create_{shape_name}(left, top, right, bottom, fill='{color}', dash=({dash}), outline='{outline}', "
          f"tags=['{tag}', '{properties}', '{direction}'])")
