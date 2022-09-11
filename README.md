@@ -6,6 +6,7 @@ Controls can be bound to different keys with "Customize controls"
 Default controls: WASD - move , space - start/pause , Left CTRL - Toggles slow mode (for precise movement)  
 Light green tiles are checkpoints, dark green are goal tiles, smooth yellow circles are coins. Collect all coins and reach the goal to win.  
 Circles with uneven outlines are traps.  
+Goal tile(s) will not complete level unless all coins are collected (if any)
 Manually load a level to play using "Load Level"  
 
 **Level Creator:**  
