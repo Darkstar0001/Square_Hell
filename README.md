@@ -13,4 +13,5 @@ Create New - Create a new level from scratch
 Preload level from file - Load an existing level from a file into the editor  
 Left mouse button (click/hold) - Place object(s)  
 Right mouse button (click/hold) - Erase object(s)  
+Trap movement offset range is -3 to 3 (left to right, top to bottom)  
 Saves to "My Saved Levels.csv"
