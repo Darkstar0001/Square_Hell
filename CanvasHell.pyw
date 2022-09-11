@@ -71,16 +71,17 @@ class Levels(tk.Frame):
         self.bind_controls()
         self.start_button.config(text='Pause', command=self.stop)
         self.root.bind(f"<KeyRelease-{self.key_binds['START/PAUSE']}>",
-                       lambda: self.root.bind(f"<{self.key_binds['START/PAUSE']}>", self.stop))
+                       lambda _: self.root.bind(f"<{self.key_binds['START/PAUSE']}>", self.stop))
 
-    def stop(self, _=None):
+    def stop(self, _=None, win=False):
         self.unbind_controls()
         self.running = False
         self.customize_controls_button.config(state='normal')
         self.load_level_button.config(state='normal')
         self.start_button.config(text='Start', command=self.start)
-        self.root.bind(f"<KeyRelease-{self.key_binds['START/PAUSE']}>",
-                       lambda: self.root.bind(f"<{self.key_binds['START/PAUSE']}>", self.start))
+        if not win:
+            self.root.bind(f"<KeyRelease-{self.key_binds['START/PAUSE']}>",
+                           lambda _: self.root.bind(f"<{self.key_binds['START/PAUSE']}>", self.start))
 
     def game_loop(self):
         while True:
@@ -218,9 +219,11 @@ class Levels(tk.Frame):
         self.field.coords(self.player, *self.checkpoint)
 
     def win(self):
-        self.stop()
+        self.stop(win=True)
         self.start_button.config(state='disabled')
-        self.field.create_text(self.WIDTH/2, self.HEIGHT/2, text=f'Victory!\n{self.deaths} deaths', font='arial 40')
+        win_text = self.field.create_text(self.WIDTH/2, self.HEIGHT/4, text=f'Victory!\n{self.deaths} deaths', font='arial 40')
+        self.field.create_rectangle(self.field.bbox(win_text), outline="", fill="azure")
+        self.field.tag_raise(win_text)
 
     def customize_controls_dialogue(self, key_binds):
         key_bind_window = tk.Toplevel()
@@ -275,7 +278,7 @@ class Levels(tk.Frame):
     def unbind_controls(self):
         for control in tuple(self.key_binds.values()):
             self.root.unbind(control)
-            self.root.unbind(f"KeyRelease-{control}")
+            self.root.unbind(f"<KeyRelease-{control}>")
 
 
 def main():
