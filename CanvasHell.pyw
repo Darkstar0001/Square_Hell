@@ -163,9 +163,9 @@ class Levels(tk.Frame):
 
     def update_trap_direction(self, trap) -> int:
         tags = list(self.field.gettags(trap))
-        if int(tags[1]) == 3:
+        if int(tags[1]) == 4:
             tags[2] = -1
-        elif int(tags[1]) == -3:
+        elif int(tags[1]) == -4:
             tags[2] = 1
         tags[1] = int(tags[1]) + int(tags[2])
         self.field.itemconfig(trap, tags=tags)
