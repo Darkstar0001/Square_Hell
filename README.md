@@ -11,6 +11,6 @@ Manually load a level to play using "Load Level"
 **Level Creator:**  
 Create New - Create a new level from scratch  
 Preload level from file - Load an existing level from a file into the editor  
-Left mouse button - Place object  
-Right mouse button - Erase object  
+Left mouse button (click/hold) - Place object  
+Right mouse button (click/hold) - Erase object  
 Saves to "My Saved Levels.csv"
